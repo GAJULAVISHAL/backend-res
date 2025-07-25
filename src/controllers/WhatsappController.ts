@@ -34,8 +34,8 @@ export async function getWhatsAppResponses(req: any, res: any) {
 }
 
 export function verifyWhatsAppWebhook(req: any, res: any) {
-  const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN; // Your secret token
-
+  const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN; 
+  
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];

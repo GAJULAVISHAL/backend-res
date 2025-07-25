@@ -7,7 +7,7 @@ import { customerRouter } from './routers/CustomerRouter';
 import { whatsAppRouter } from './routers/WhatsappRouter';
 
 dotenv.config();
-const port = process.env.PORT || 3000; // Default to 3000 if PORT is not set
+const port = process.env.PORT || 4040; // Default to 3000 if PORT is not set
 const app = express();
 
 app.use(cors());
