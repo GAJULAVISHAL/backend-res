@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id              Int      @id @default(autoincrement())
+  whatsappNumber  String   @unique @map("whatsapp_number")
+  deliveryAddress String   @map("delivery_address")
+  createdAt       DateTime @default(now()) @map("created_at")
+  
+  // Relations
+  orders Order[]
+  
+  @@map("customers")
+}
+
+model Order {
+  id            Int      @id @default(autoincrement())
+  customerId    Int      @map("customer_id")
+  mealQuantity  Int      @map("meal_quantity")
+  mealSplit     String   @map("meal_split") // 'lunch', 'dinner', 'both'
+  totalAmount   Int      @map("total_amount") // in paisa
+  paymentId     String?  @map("payment_id")
+  paymentStatus String   @default("pending") @map("payment_status") // 'pending', 'success', 'failed'
+  orderStatus   String   @default("active") @map("order_status") // 'active', 'completed', 'cancelled'
+  createdAt     DateTime @default(now()) @map("created_at")
+  
+  // Relations
+  customer   Customer   @relation(fields: [customerId], references: [id])
+  deliveries Delivery[]
+  
+  @@map("orders")
+}
+
+model Menu {
+  id        String   @id @default(uuid())
+  menuType  String
+  menuDate  String   @map("menu_date") 
+  menuItems String[] 
+  createdAt DateTime @default(now())
+}
+
+model WhatsAppResponse {
+  id        Int      @id @default(autoincrement())
+  from      String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@map("whatsapp_responses")
+}
+
+model Delivery {
+  id               Int       @id @default(autoincrement())
+  orderId          Int       @map("order_id")
+  deliveryDate     String    @map("delivery_date")
+  mealType         String    @map("meal_type") 
+  customerResponse String?   @map("customer_response")
+  deliveryStatus   String    @default("to_be_delivered") @map("delivery_status")
+  deliveredAt      DateTime? @map("delivered_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  order Order @relation(fields: [orderId], references: [id])
+  
+  @@map("deliveries")
+}
