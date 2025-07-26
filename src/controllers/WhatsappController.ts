@@ -1,28 +1,91 @@
 import prisma from '../lib/prisma';
+import { getTodayMenu } from './MenuController';
+
 export async function handleWhatsAppWebhook(req: any, res: any) {
   try {
-    // The actual message object is deeply nested inside the request body
     const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
 
-    // Check if a message object with the 'from' and 'text' properties exists
+    // Ensure we have a valid message with text
     if (message?.from && message?.text?.body) {
-      // Create a record in your database
+      const customerNumber = message.from;
+      const customerReply = message.text.body;
+
+      // First, save the raw response to your database
       await prisma.whatsAppResponse.create({
         data: {
-          from: message.from,
-          message: message.text.body,
+          from: customerNumber,
+          message: customerReply,
         },
       });
+
+      // Now, check if the reply was "Yes" (case-insensitive)
+      if (customerReply.trim().toLowerCase() === 'yes') {
+        // Find the customer by their WhatsApp number
+        const customer = await prisma.customer.findUnique({
+          where: { whatsappNumber: customerNumber },
+        });
+
+        if (!customer) {
+          console.log(`Customer with number ${customerNumber} not found.`);
+          return res.sendStatus(200);
+        }
+
+        // Find the customer's most recent active order
+        const activeOrder = await prisma.order.findFirst({
+          where: {
+            customerId: customer.id,
+            orderStatus: 'active',
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        });
+
+        if (!activeOrder) {
+          console.log(`No active order found for customer ${customer.id}.`);
+          return res.sendStatus(200);
+        }
+
+        // Check if there are any meals left
+        if (activeOrder.mealQuantity <= 0) {
+          console.log(`Order ${activeOrder.id} has no meals left.`);
+          // Optionally, send a message to the user telling them their plan has expired
+          return res.sendStatus(200);
+        }
+
+        // Create a new delivery record for today
+        await prisma.delivery.create({
+          data: {
+            orderId: activeOrder.id,
+            deliveryDate: new Date().toISOString().split('T')[0],
+            mealType: activeOrder.mealSplit, // Use mealSplit from the order
+            customerResponse: 'Yes',
+            deliveryStatus: 'scheduled', // A new status for confirmed meals
+          },
+        });
+
+        // Decrement the meal quantity on the original order
+        await prisma.order.update({
+          where: { id: activeOrder.id },
+          data: {
+            mealQuantity: {
+              decrement: 1,
+            },
+          },
+        });
+
+        console.log(`Delivery created and meal count updated for order ${activeOrder.id}.`);
+      }
     }
+
+    // Always respond to Meta with a success status
     res.sendStatus(200);
 
   } catch (error) {
-    console.error('Error handling WhatsApp webhook:', error);
-    // Even if your code has an error, send a 200 OK to prevent Meta from disabling your webhook
-    res.sendStatus(200);
+    console.error('Error in handleWhatsAppWebhook:', error);
+    res.sendStatus(200); // Still send 200 to prevent webhook deactivation
   }
 }
-
 // ... keep your other functions like getWhatsAppResponses and verifyWhatsAppWebhook
 
 export async function getWhatsAppResponses(req: any, res: any) {

@@ -1,18 +1,19 @@
 import prisma from "../lib/prisma";
 import { startOfDay, endOfDay } from 'date-fns';
-import { sendWhatsAppMessage } from "../lib/WhatsappService";
+import { sendMenuTemplate } from "../lib/WhatsappService";
 
 export async function createOrder(req: any, res: any) {
   try {
     const {
       customerId,
       mealQuantity,
-      mealSplit, // 'lunch', 'dinner', 'both'
+      mealSplit,
       totalAmount,
-      paymentId
+      paymentId,
+      whatsappNumber 
     } = req.body;
 
-    if (!customerId || !mealQuantity || !mealSplit || !totalAmount) {
+    if (!customerId || !mealQuantity || !mealSplit || !totalAmount || !whatsappNumber) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -28,6 +29,7 @@ export async function createOrder(req: any, res: any) {
       }
     });
 
+    // Find today's menu that matches the order's meal split (e.g., "Lunch")
     const today = new Date().toISOString().split('T')[0];
     const menu = await prisma.menu.findFirst({
       where: {
@@ -37,8 +39,11 @@ export async function createOrder(req: any, res: any) {
     });
 
     if (menu) {
-      const menuMessage = `Today's ${menu.menuType} menu:\n- ${menu.menuItems.join('\n- ')}`;
-      await sendWhatsAppMessage(req.body.whatsappNumber, menuMessage);
+      // 👇 2. Format the menu items array into a single string with line breaks
+      const menuItemsString = "- " + menu.menuItems.join('\n- ');
+
+      // 👇 3. Call the new `sendMenuTemplate` function with the correct parameters
+      await sendMenuTemplate(whatsappNumber, menu.menuType, menuItemsString);
     }
 
     res.status(201).json({ success: true, data: newOrder });
@@ -47,6 +52,7 @@ export async function createOrder(req: any, res: any) {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }
+
 
 
 export const getTodayOrders = async (req: any, res: any) => {
