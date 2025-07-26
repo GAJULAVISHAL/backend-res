@@ -10,7 +10,13 @@ dotenv.config();
 const port = process.env.PORT || 4040; // Default to 3000 if PORT is not set
 const app = express();
 
-app.use(cors());
+app.use(cors(
+    {
+        origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Default to localhost if FRONTEND_URL is not set
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        credentials: true,
+    }
+));
 app.use(express.json());
 
 app.use('/api/v1/menu',MenuRouter);
