@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN;
-const WHATSAPP_API_URL = `https://graph.facebook.com/v19.0/${process.env.PHONE_NUMBER_ID}/messages`;
+const WHATSAPP_API_URL = `https://graph.facebook.com/v22.0/${process.env.PHONE_NUMBER_ID}/messages`;
 
 export async function sendMenuTemplate(to: string, mealType: string, menuItems: string): Promise<boolean> {
   console.log(`[WhatsappService] ➡️ Attempting to send template to: ${to}`);
