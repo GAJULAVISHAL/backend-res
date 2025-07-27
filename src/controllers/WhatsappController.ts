@@ -1,10 +1,9 @@
 import prisma from '../lib/prisma';
-import { getTodayMenu } from './MenuController';
 
 export async function handleWhatsAppWebhook(req: any, res: any) {
   try {
     const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
-
+    
     // Ensure we have a valid message with text
     if (message?.from && message?.text?.body) {
       const customerNumber = message.from;
