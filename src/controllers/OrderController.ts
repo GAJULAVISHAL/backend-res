@@ -34,11 +34,9 @@ export async function createOrder(req: any, res: any) {
       console.log('[OrderController] 🛑 Menu not found.');
       return res.status(404).json({ error: `No ${mealSplit} menu found for today.` });
     }
+    const menuItemsString = menu.menuItems.join(', ');
 
-    console.log('[OrderController] ✅ Menu found:', menu);
-    console.log('[OrderController] 📲 Preparing to send WhatsApp message...');
-
-    const menuItemsString = "- " + menu.menuItems.join('\n- ');
+    console.log('[OrderController] 📲 Preparing to send WhatsApp message with formatted menu:', menuItemsString);
     const messageSent = await sendMenuTemplate(whatsappNumber, menu.menuType, menuItemsString);
 
     if (messageSent) {
