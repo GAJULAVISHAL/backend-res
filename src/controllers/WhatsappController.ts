@@ -92,22 +92,6 @@ export async function handleWhatsAppWebhook(req: any, res: any) {
   }
 }
 
-// ... (keep your other functions)
-
-// ... keep your other functions (getWhatsAppResponses, verifyWhatsAppWebhook)
-export async function getWhatsAppResponses(req: any, res: any) {
-    try {
-      const responses = await prisma.whatsAppResponse.findMany({
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
-      res.status(200).json({ success: true, responses: responses });
-    } catch (error) {
-      console.error('Error fetching WhatsApp responses:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-}
   
 export function verifyWhatsAppWebhook(req: any, res: any) {
     const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
