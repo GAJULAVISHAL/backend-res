@@ -76,7 +76,7 @@ export const verifyPayment = async (req: Request, res: Response) => {
             return res.status(404).json({ error: `No ${mealSplit} menu found for today.` });
         }
 
-        const menuItemsString = "- " + menu.menuItems.join('\n- ');
+        const menuItemsString = menu.menuItems.join(', ');
         const messageSent = await sendMenuTemplate(whatsappNumber, menu.menuType, menuItemsString);
 
         // --- Step 3: Conditionally Create the Order ---
