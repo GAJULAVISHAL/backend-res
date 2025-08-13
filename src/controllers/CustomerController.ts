@@ -1,5 +1,6 @@
+import { Request, Response } from "express";
 import prisma from "../lib/prisma";
-export async function createCustomer(req: any, res: any) {
+export async function createCustomer(req: Request, res: Response) {
     try{
         const{
             whatsappNumber,
@@ -39,7 +40,7 @@ export async function createCustomer(req: any, res: any) {
     }
 }
 
-export async function getAllCustomers(req: any, res: any) {
+export async function getAllCustomers(req: Request, res: Response) {
   try {
     const customerCount = await prisma.customer.count();
     console.log("Total customers:", customerCount);

@@ -1,6 +1,7 @@
+import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 
-export async function handleWhatsAppWebhook(req: any, res: any) {
+export async function handleWhatsAppWebhook(req: Request, res: Response) {
   console.log('\n[Webhook] Incoming request at:', new Date().toISOString());
   console.log('[Webhook] 📥 Full incoming payload:', JSON.stringify(req.body, null, 2));
 
@@ -93,7 +94,7 @@ export async function handleWhatsAppWebhook(req: any, res: any) {
 }
 
   
-export function verifyWhatsAppWebhook(req: any, res: any) {
+export function verifyWhatsAppWebhook(req: Request, res: Response) {
     const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
   
     const mode = req.query['hub.mode'];

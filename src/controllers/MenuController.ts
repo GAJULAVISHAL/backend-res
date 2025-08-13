@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { sendMenuTemplate } from '../lib/WhatsappService';
 
-export async function createMenu(req: any, res: any) {
+export async function createMenu(req: Request, res: Response) {
     console.log('\n[MenuController] 🚀 Starting createMenu process at:', new Date().toISOString());
     try {
         const { menuType, menuDate, menuItems } = req.body;
@@ -88,7 +88,7 @@ export async function createMenu(req: any, res: any) {
 }
 
 
-export async function getTodayMenu(req: any, res: any) {
+export async function getTodayMenu(req: Request, res: Response) {
     try {
         const { menuType } = req.query;
 

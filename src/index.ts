@@ -6,6 +6,7 @@ import { MenuRouter } from './routers/MenuRouter';
 import { customerRouter } from './routers/CustomerRouter';
 import { whatsAppRouter } from './routers/WhatsappRouter';
 import { deliveryRouter } from './routers/DeliveryRouter';
+import { paymentRouter } from './routers/PaymentRoute';
 
 dotenv.config();
 const port = process.env.PORT || 4040; // Default to 3000 if PORT is not set
@@ -19,6 +20,7 @@ app.use('/api/v1/order',OrderRouter)
 app.use('/api/v1/customer',customerRouter)
 app.use('/api/v1/whatsapp', whatsAppRouter);
 app.use('/api/v1/delivery', deliveryRouter);
+app.use('/api/v1/payment', paymentRouter)
 
 app.listen(port, () => {
     console.log(`server running on port ${port}`); 

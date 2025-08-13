@@ -1,8 +1,9 @@
+import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { startOfDay, endOfDay } from 'date-fns';
 
 // GET today's confirmed deliveries
-export const getTodayDeliveries = async (req: any, res: any) => {
+export const getTodayDeliveries = async (req: Request, res: Response) => {
   try {
     const today = new Date().toISOString().split('T')[0];
 
@@ -31,7 +32,7 @@ export const getTodayDeliveries = async (req: any, res: any) => {
 };
 
 // PATCH a delivery's status
-export const updateDeliveryStatus = async (req: any, res: any) => {
+export const updateDeliveryStatus = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
