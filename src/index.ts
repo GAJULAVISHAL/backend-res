@@ -12,7 +12,7 @@ dotenv.config();
 const port = process.env.PORT || 4040; // Default to 3000 if PORT is not set
 const app = express();
 
-app.use(cors({ origin: '*' })); // Allow all origins for development
+app.use(cors({ origin: 'http://localhost:5173' })); // Allow all origins for development
 app.use(express.json());
 
 app.use('/api/v1/menu',MenuRouter);
