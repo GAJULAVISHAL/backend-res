@@ -8,7 +8,7 @@ export async function sendMenuTemplate(to: string, mealType: string, menuItems: 
 
   const payload = {
     messaging_product: 'whatsapp',
-    to,
+    to : `91${to}`,
     type: 'template',
     template: {
       name: 'daily_menu',
