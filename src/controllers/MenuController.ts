@@ -15,21 +15,10 @@ export async function createMenu(req: Request, res: Response) {
         }
         console.log(`[MenuController] ✅ Validation passed for ${menuType} menu on ${menuDate}.`);
 
-        // Step 1: Create the menu in the database
-        console.log('[MenuController] 💾 Creating menu in database...');
-        const newMenu = await prisma.menu.create({
-            data: {
-                menuType,
-                menuDate,
-                menuItems,
-            },
-        });
-        console.log(`[MenuController] ✅ Menu created successfully with ID: ${newMenu.id}`);
+        // --- Start Notification Logic FIRST ---
+        console.log('[MenuController] 🚀 Starting customer notification process BEFORE creating menu...');
 
-        // --- Start Notification Logic ---
-        console.log('[MenuController] 🚀 Starting customer notification process...');
-
-        // Step 2: Find all active orders with meals remaining
+        // Step 1: Find all active orders with meals remaining
         const activeOrders = await prisma.order.findMany({
             where: {
                 orderStatus: 'active',
@@ -43,6 +32,8 @@ export async function createMenu(req: Request, res: Response) {
 
         if (activeOrders.length === 0) {
             console.log(`[MenuController] ℹ️ No active customers found for ${menuType} menu. No messages will be sent.`);
+            // Since there are no customers, we can safely create the menu and exit.
+            const newMenu = await prisma.menu.create({ data: { menuType, menuDate, menuItems } });
             return res.status(201).json({
                 success: true,
                 data: newMenu,
@@ -54,7 +45,7 @@ export async function createMenu(req: Request, res: Response) {
         const menuItemsString = menuItems.join(', ');
         let successfulSends = 0;
 
-        // Step 3: Loop through each order and send the message
+        // Step 2: Loop through each order and send the message
         for (const order of activeOrders) {
             if (order.customer.whatsappNumber) {
                 console.log(`[MenuController] 📲 Attempting to send message to customer ID: ${order.customerId} (${order.customer.whatsappNumber})`);
@@ -69,17 +60,33 @@ export async function createMenu(req: Request, res: Response) {
                 } else {
                     console.log(`[MenuController] ❌ Failed to send message to ${order.customer.whatsappNumber}`);
                 }
-            } else {
-                console.log(`[MenuController] ⚠️ Customer ID: ${order.customerId} has no WhatsApp number.`);
             }
         }
         
-        console.log(`[MenuController] ✅ Notification process complete.`);
-        return res.status(201).json({
-            success: true,
-            data: newMenu,
-            message: `Menu created and notifications sent to ${successfulSends} of ${activeOrders.length} customers.`,
-        });
+        // Step 3: Conditionally create the menu in the database
+        if (successfulSends > 0) {
+            console.log(`[MenuController] ✅ ${successfulSends} messages were sent successfully. Proceeding to create menu...`);
+            const newMenu = await prisma.menu.create({
+                data: {
+                    menuType,
+                    menuDate,
+                    menuItems,
+                },
+            });
+            console.log(`[MenuController] ✅ Menu created successfully with ID: ${newMenu.id}`);
+
+            return res.status(201).json({
+                success: true,
+                data: newMenu,
+                message: `Notifications sent to ${successfulSends} of ${activeOrders.length} customers, and menu was created.`,
+            });
+        } else {
+            console.log('[MenuController] 🛑 No messages could be sent. Menu creation will be aborted.');
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to send notifications to any customers. Menu was not created.'
+            });
+        }
 
     } catch (error) {
         console.error('[MenuController] ❌ An unexpected error occurred during the createMenu process:', error);
