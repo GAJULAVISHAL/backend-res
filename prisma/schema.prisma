@@ -47,7 +47,8 @@ model Menu {
   id        String   @id @default(uuid())
   menuType  String
   menuDate  String   @map("menu_date") 
-  menuItems String[] 
+  menuItems String[]
+  ratePerMeal Int 
   createdAt DateTime @default(now())
 }
 

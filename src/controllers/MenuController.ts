@@ -5,12 +5,11 @@ import { sendMenuTemplate } from '../lib/WhatsappService';
 export async function createMenu(req: Request, res: Response) {
     console.log('\n[MenuController] 🚀 Starting createMenu process at:', new Date().toISOString());
     try {
-        const { menuType, menuDate, menuItems } = req.body;
+        const { menuType, menuDate, menuItems, ratePerMeal } = req.body;
         console.log('[MenuController] Received request body:', req.body);
 
         // Input validation
-        if (!menuType || !menuDate || !menuItems || !Array.isArray(menuItems) || menuItems.length === 0) {
-            console.log('[MenuController] 🛑 Validation failed: Missing or invalid required fields.');
+        if (!menuType || !menuDate || !menuItems || !ratePerMeal || !Array.isArray(menuItems) || menuItems.length === 0) {
             return res.status(400).json({ error: 'Missing or invalid required fields' });
         }
         console.log(`[MenuController] ✅ Validation passed for ${menuType} menu on ${menuDate}.`);
@@ -33,7 +32,7 @@ export async function createMenu(req: Request, res: Response) {
         if (activeOrders.length === 0) {
             console.log(`[MenuController] ℹ️ No active customers found for ${menuType} menu. No messages will be sent.`);
             // Since there are no customers, we can safely create the menu and exit.
-            const newMenu = await prisma.menu.create({ data: { menuType, menuDate, menuItems } });
+            const newMenu = await prisma.menu.create({ data: { menuType, menuDate, menuItems, ratePerMeal } });
             return res.status(201).json({
                 success: true,
                 data: newMenu,
@@ -62,7 +61,7 @@ export async function createMenu(req: Request, res: Response) {
                 }
             }
         }
-        
+
         // Step 3: Conditionally create the menu in the database
         if (successfulSends > 0) {
             console.log(`[MenuController] ✅ ${successfulSends} messages were sent successfully. Proceeding to create menu...`);
@@ -71,6 +70,7 @@ export async function createMenu(req: Request, res: Response) {
                     menuType,
                     menuDate,
                     menuItems,
+                    ratePerMeal, // 👈 3. Add the new field to the database creation logic
                 },
             });
             console.log(`[MenuController] ✅ Menu created successfully with ID: ${newMenu.id}`);
@@ -116,7 +116,7 @@ export async function getTodayMenu(req: Request, res: Response) {
                 menuDate: formattedDate,
                 menuType: menuType.toString(),
             },
-            orderBy:{
+            orderBy: {
                 createdAt: 'desc',
             }
         });
